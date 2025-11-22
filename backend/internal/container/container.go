@@ -36,7 +36,7 @@ func NewContainer() (*Container, error) {
 
 	// Rest
 	apiSvc := apiservice.NewApiService()
-	controller := controller.NewController(gin.New(), apiSvc)
+	controller := controller.NewController(gin.New(), apiSvc, config)
 	rest := rest.NewRestServer(config, controller)
 
 	container = &Container{

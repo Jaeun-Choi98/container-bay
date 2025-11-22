@@ -3,13 +3,20 @@ package controller
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+
 	"net/http"
 	"time"
 
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/http-utils/httperr"
+	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/request"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/response"
 	"github.com/Jaeun-Choi98/modules/shell"
 	"github.com/gin-gonic/gin"
+	"github.com/go-git/go-git/v6"
+	githttp "github.com/go-git/go-git/v6/plumbing/transport/http"
 )
 
 func (t *Controller) GetDockerPs(c *gin.Context) {
@@ -62,6 +69,36 @@ func (t *Controller) GetDockerPs(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SUCCESS.Add(res))
 }
 
-func (t *Controller) PostDockerfileBuild(c *gin.Context) {
+func (t *Controller) PostBuildProject(c *gin.Context) {
+	reqs := &request.PostBuildProjectRequest{}
+	if err := c.BindJSON(reqs); err != nil {
+		c.Error(httperr.INNER_ERROR.Add(err, response.FAIL))
+		return
+	}
 
+	pjtPath := filepath.Join(t.Cfg.RepoDir, reqs.PjtName)
+	log.Printf("[debug] pjt_path: %s", pjtPath)
+
+	// clone하기 전에, 해당 path에 폴더가 이미 있는지 확인.
+	os.RemoveAll(pjtPath)
+
+	// repo는 필요하지 않음.
+	_, err := git.PlainClone(pjtPath, &git.CloneOptions{
+		Auth: &githttp.BasicAuth{
+			Username: t.Cfg.GitId,
+			Password: t.Cfg.GitPwd,
+		},
+		URL:               reqs.URL,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+	})
+
+	if err != nil {
+		c.Error(httperr.INNER_ERROR.Add(err, response.FAIL))
+		return
+	}
+
+	buildPath := filepath.Join(pjtPath, reqs.ContextPath)
+	log.Printf("[debug] build_path: %s", buildPath)
+
+	c.JSON(http.StatusOK, "success")
 }

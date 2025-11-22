@@ -15,10 +15,11 @@ type Controller struct {
 	Cfg    *config.Config
 }
 
-func NewController(router *gin.Engine, apiSvc service.ApiServiceInterface) *Controller {
+func NewController(router *gin.Engine, apiSvc service.ApiServiceInterface, cfg *config.Config) *Controller {
 	controller := &Controller{
 		Router: router,
 		ApiSvc: apiSvc,
+		Cfg:    cfg,
 	}
 	controller.RoutingPath()
 	return controller
@@ -37,7 +38,7 @@ func (t *Controller) RoutingPath() {
 
 	t.Router.GET("/docker/ps/:ip", t.GetDockerPs)
 
-	t.Router.POST("/")
+	t.Router.POST("/build", t.PostBuildProject)
 
 	// SPA 미들웨어 동작 방식에 의해 제일 아래에 배치
 	//t.Router.Use(middleware.SpaHandlerOther("/vworld", "vworld"))
