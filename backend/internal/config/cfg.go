@@ -33,6 +33,13 @@ type Config struct {
 	DockerRepoPwd  string
 
 	BuildSvrPasswd string
+
+	RedisIp      string
+	RedisPort    string
+	RedisPwd     string
+	RedisDB      int
+	RedisProtocl int
+	RedisTimeout int
 }
 
 func NewConfig() (*Config, error) {
@@ -87,6 +94,17 @@ func initConfig(cfgFile *ini.File) (*Config, error) {
 	}
 
 	config.ShellName = cfgFile.Section("SHELL").Key("SHELL_NAME").MustString("bash")
+
+	config.RedisIp = cfgFile.Section("REDIS").Key("IP").MustString("")
+	config.RedisPort = cfgFile.Section("REDIS").Key("PORT").MustString("")
+	config.RedisPwd = cfgFile.Section("REDIS").Key("PASSWD").MustString("")
+	if config.RedisIp == "" || config.RedisPort == "" || config.RedisPwd == "" {
+		return nil, fmt.Errorf("[CONFIG] redis info is empty")
+	}
+
+	config.RedisDB = cfgFile.Section("REDIS").Key("DB").MustInt(0)
+	config.RedisProtocl = cfgFile.Section("REDIS").Key("PROTOCOL").MustInt(2)
+	config.RedisTimeout = cfgFile.Section("REDIS").Key("TIMEOUT").MustInt(5)
 
 	return config, nil
 }

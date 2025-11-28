@@ -12,7 +12,7 @@ function App(): JSX.ReactElement {
     <div className="App">
       <Router>
         <Routes>
-          <Route path="/" element={<LearnReact />}></Route>
+          <Route path="/" element={<ReactApp />}></Route>
           <Route path="/home" element={<Home />}></Route>
         </Routes>
       </Router>
@@ -21,18 +21,14 @@ function App(): JSX.ReactElement {
   );
 }
 
-const LearnReact: React.FC = () => {
+const ReactApp: React.FC = (): JSX.ReactElement => {
   return (
     <div>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Start <code>src/App.tsx</code> and save to reload.
-        </p>
+
         <Link to="/home"
           className="App-link"
-          target="_blank"
-
         >
           Go Container Bay
         </Link>

@@ -1,9 +1,0 @@
-2025/11/13 12:28:14 [Log Cleanup] Log cleanup completed: 0 files deleted in total
-2025/11/13 14:53:31 [REST] result code: 5
-2025/11/13 14:53:31 [Thu, 13 Nov 2025 14:53:31 KST] ::1 "GET /docker/ps/10.1.0.168 HTTP/1.1" 400 0.001sec "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-2025/11/13 14:53:32 [Thu, 13 Nov 2025 14:53:32 KST] ::1 "GET /favicon.ico HTTP/1.1" 404 0.000sec "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-2025/11/13 14:53:49 [App] Shutting down...
-2025/11/13 14:53:49 [App] Failed to start rest server: http: Server closed
-2025/11/13 14:53:49 [REST] REST goroutine terminated
-2025/11/13 14:53:49 [App] Application is terminated
-2025/11/13 14:53:49 [Log Cleanup] Log cleanup goroutine terminated

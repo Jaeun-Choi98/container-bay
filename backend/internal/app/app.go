@@ -10,6 +10,7 @@ import (
 
 	"github.com/Jaeun-Choi98/container-bay/internal/container"
 	"github.com/Jaeun-Choi98/container-bay/internal/logger"
+	"github.com/Jaeun-Choi98/container-bay/internal/redis"
 )
 
 type Application struct {
@@ -57,6 +58,9 @@ func (a *Application) Shutdown() {
 		logger.Printf("[App] issue in shutting down rest: %v", err)
 	}
 	a.wg.Wait()
+	if err := redis.CloseRedisClient(); err != nil {
+		logger.Printf("[App] issue in closing close redis client: %v", err)
+	}
 	logger.Println("[App] Application is terminated")
 	logger.Shutdown()
 	a.mainCtxCacnel()

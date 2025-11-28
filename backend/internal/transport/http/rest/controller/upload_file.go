@@ -42,7 +42,7 @@ func (t *Controller) PostUploadTarGz(c *gin.Context) {
 		return
 	}
 
-	reqFile, err := c.FormFile("targz")
+	reqFile, err := c.FormFile("file")
 	if err != nil {
 		c.Error(httperr.BADREQUEST.Add(fmt.Errorf("failed to upload file: %v", err), response.FAIL))
 		return
@@ -66,7 +66,7 @@ func (t *Controller) PostUploadTarGz(c *gin.Context) {
 		return
 	}
 
-	logger.Println("<=== Run docker_run.sh ===>")
+	logger.Println("<=== Run targz_extract.sh ===>")
 	logger.Printf("content: %s", script)
 
 	var res []string

@@ -3,6 +3,7 @@ package container
 import (
 	"github.com/Jaeun-Choi98/container-bay/internal/config"
 	"github.com/Jaeun-Choi98/container-bay/internal/logger"
+	"github.com/Jaeun-Choi98/container-bay/internal/redis"
 	apiservice "github.com/Jaeun-Choi98/container-bay/internal/service/api-service"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/controller"
@@ -33,6 +34,11 @@ func NewContainer() (*Container, error) {
 		return nil, err
 	}
 	logger.SetLogger(customLogger)
+
+	// Redis
+	if err := redis.InitRedis(config); err != nil {
+		return nil, err
+	}
 
 	// Rest
 	apiSvc := apiservice.NewApiService(config)

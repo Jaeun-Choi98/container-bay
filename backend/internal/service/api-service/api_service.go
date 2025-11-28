@@ -3,13 +3,15 @@ package apiservice
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/Jaeun-Choi98/container-bay/internal/config"
 	"github.com/Jaeun-Choi98/container-bay/internal/logger"
+	"github.com/Jaeun-Choi98/container-bay/internal/redis"
+	redismodel "github.com/Jaeun-Choi98/container-bay/internal/redis/redis-model"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/http-utils/httperr"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/request"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/response"
@@ -23,15 +25,39 @@ type ApiService struct {
 }
 
 func NewApiService(cfg *config.Config) *ApiService {
-	Init(cfg)
+	if err := Init(cfg); err != nil {
+		logger.Printf("[API Service] failed to init: %v", err)
+	}
 	return &ApiService{
 		Cfg: cfg,
 	}
 }
 
 func Init(cfg *config.Config) error {
-	if err := DockerRepoLogin(cfg); err != nil {
-		return fmt.Errorf("[API Service] failed to init")
+
+	dockerLoginSessionRepo := redis.GetRepository(redismodel.DockerLoginSessionKey)
+	if dockerLoginSessionRepo == nil {
+		return fmt.Errorf("failed to get docker login session info")
+	}
+
+	dockerLoginSession, err := dockerLoginSessionRepo.
+		FindByIndex("url", fmt.Sprintf("%s:%s", cfg.DockerRepoIp, cfg.DockerRepoPort))
+
+	// 해당 도서 사설 레포의 로그인 세션이 없다면, 로그인 이후에 레디스에 데이터 갱신
+	if err != nil || dockerLoginSession == nil {
+		if err := DockerRepoLogin(cfg); err != nil {
+			return fmt.Errorf("fail docker login")
+		}
+		dockerLoginSessionRepo.Create(&redismodel.DockerLoginSession{
+			Url:     fmt.Sprintf("%s:%s", cfg.DockerRepoIp, cfg.DockerRepoPort),
+			IsLogin: true,
+		})
+		loginSession, _ := dockerLoginSessionRepo.FindByIndex("url", fmt.Sprintf("%s:%s", cfg.DockerRepoIp, cfg.DockerRepoPort))
+		exp, _ := dockerLoginSessionRepo.GetTTL(loginSession.GetId())
+		logger.Printf("[API Service] create docker login session in redis, expire: %v", exp)
+	} else {
+		exp, _ := dockerLoginSessionRepo.GetTTL(dockerLoginSession.GetId())
+		logger.Printf("[API Service] already exist docker login session in redis, expire: %v", exp)
 	}
 
 	return nil
@@ -39,10 +65,15 @@ func Init(cfg *config.Config) error {
 
 func DockerRepoLogin(cfg *config.Config) error {
 	executor := shell.NewScriptExecutor(cfg.ShellDir)
+
 	script := fmt.Sprintf(`
-		echo %s | sudo -S docker login %s:5000 -u %s -p %s
-	`, cfg.BuildSvrPasswd, cfg.DockerRepoIp, cfg.DockerRepoId, cfg.DockerRepoPwd)
-	result, err := executor.Execute(context.Background(), cfg.ShellName, "docker_login.sh", script, true)
+		echo %s | sudo -S sh -c 'echo %s | docker login %s:%s -u %s --password-stdin'
+	`, cfg.BuildSvrPasswd, cfg.DockerRepoPwd, cfg.DockerRepoIp, cfg.DockerRepoPort, cfg.DockerRepoId)
+
+	timeout, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+	result, err := executor.Execute(timeout, cfg.ShellName, "docker_login.sh", script, true)
+
 	if err != nil {
 		return fmt.Errorf("[API Service] failed to execute script(docker_login.sh): %v", err)
 	}
@@ -58,13 +89,13 @@ func DockerRepoLogin(cfg *config.Config) error {
 	return nil
 }
 
-func (s *ApiService) DockerPs(host string) ([]string, error) {
+func (s *ApiService) DockerPs(host string) (map[string][]string, error) {
 
 	hostLocalSepSlash := filepath.FromSlash(host)
 	hostIpAndPort, _ := strings.CutPrefix(hostLocalSepSlash, filepath.FromSlash("tcp://"))
 	dockerDaemonHost := filepath.FromSlash(fmt.Sprintf("tcp://%s", hostIpAndPort))
 
-	log.Printf("[debug] docker daemon host: %s", dockerDaemonHost)
+	// log.Printf("[debug] docker daemon host: %s", dockerDaemonHost)
 
 	executor := shell.NewScriptExecutor(s.Cfg.ShellDir)
 
@@ -80,41 +111,41 @@ func (s *ApiService) DockerPs(host string) ([]string, error) {
 	logger.Println("<=== Run docker_ps.sh ===>")
 	logger.Printf("content: %s", script)
 
-	var res []string
+	res := make(map[string][]string)
 
 	logger.Println("=== Execution Result ===")
-	res = append(res, "=== Execution Result ===")
+	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
 	logger.Printf("Duration: %v\n", result.Duration)
-	res = append(res, fmt.Sprintf("Duration: %v", result.Duration))
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
 	logger.Printf("Exit Code: %d\n", result.ExitCode)
-	res = append(res, fmt.Sprintf("Exit Code: %d", result.ExitCode))
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
 	logger.Println("=== STDOUT ===")
-	res = append(res, "=== STDOUT ===")
+	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	for _, line := range result.Stdout {
 		logger.Println(line)
-		res = append(res, line)
+		res["stdout"] = append(res["stdout"], line)
 	}
 	logger.Println("=== STDERR ===")
-	res = append(res, "=== STDERR ===")
+	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
 		logger.Println(line)
-		res = append(res, line)
+		res["stderr"] = append(res["stderr"], line)
 	}
 
 	if result.Error != nil {
 		logger.Printf("Error: %v\n", result.Error)
-		res = append(res, fmt.Sprintf("Error: %v", result.Error))
+		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
 	logger.Println("<=== END ===>")
 
 	return res, nil
 }
 
-func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) ([]string, error) {
+func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) (map[string][]string, error) {
 	pjtPath := filepath.Join(s.Cfg.RepoDir, pjtName)
 	//log.Printf("[debug] pjt_path: %s", pjtPath)
 
@@ -161,34 +192,34 @@ func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) ([]string, 
 	logger.Println("<=== Run docker_build.sh ===>")
 	logger.Printf("content: %s", script)
 
-	var res []string
+	res := make(map[string][]string)
 
 	logger.Println("=== Execution Result ===")
-	res = append(res, "=== Execution Result ===")
+	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
 	logger.Printf("Duration: %v\n", rst.Duration)
-	res = append(res, fmt.Sprintf("Duration: %v", rst.Duration))
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", rst.Duration))
 
 	logger.Printf("Exit Code: %d\n", rst.ExitCode)
-	res = append(res, fmt.Sprintf("Exit Code: %d", rst.ExitCode))
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", rst.ExitCode))
 
 	logger.Println("=== STDOUT ===")
-	res = append(res, "=== STDOUT ===")
+	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	for _, line := range rst.Stdout {
 		logger.Println(line)
-		res = append(res, line)
+		res["stdout"] = append(res["stdout"], line)
 	}
 	logger.Println("=== STDERR ===")
-	res = append(res, "=== STDERR ===")
+	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range rst.Stderr {
 		logger.Println(line)
-		res = append(res, line)
+		res["stderr"] = append(res["stderr"], line)
 	}
 
 	if rst.Error != nil {
 		logger.Printf("Error: %v\n", rst.Error)
-		res = append(res, fmt.Sprintf("Error: %v", rst.Error))
+		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", rst.Error))
 	}
 	logger.Println("<=== END ===>")
 	// 빌드가 끝났다면 pjt 삭제
@@ -197,7 +228,7 @@ func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) ([]string, 
 	return res, nil
 }
 
-func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) ([]string, error) {
+func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) (map[string][]string, error) {
 	hostLocalSepSlash := filepath.FromSlash(req.Host)
 	hostIpAndPort, _ := strings.CutPrefix(hostLocalSepSlash, filepath.FromSlash("tcp://"))
 	dockerDaemonHost := filepath.FromSlash(fmt.Sprintf("tcp://%s", hostIpAndPort))
@@ -235,34 +266,34 @@ func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) ([]string,
 	logger.Println("<=== Run docker_run.sh ===>")
 	logger.Printf("content: %s", script.String())
 
-	var res []string
+	res := make(map[string][]string)
 
 	logger.Println("=== Execution Result ===")
-	res = append(res, "=== Execution Result ===")
+	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
 	logger.Printf("Duration: %v\n", rst.Duration)
-	res = append(res, fmt.Sprintf("Duration: %v", rst.Duration))
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", rst.Duration))
 
 	logger.Printf("Exit Code: %d\n", rst.ExitCode)
-	res = append(res, fmt.Sprintf("Exit Code: %d", rst.ExitCode))
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", rst.ExitCode))
 
 	logger.Println("=== STDOUT ===")
-	res = append(res, "=== STDOUT ===")
+	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	for _, line := range rst.Stdout {
 		logger.Println(line)
-		res = append(res, line)
+		res["stdout"] = append(res["stdout"], line)
 	}
 	logger.Println("=== STDERR ===")
-	res = append(res, "=== STDERR ===")
+	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range rst.Stderr {
 		logger.Println(line)
-		res = append(res, line)
+		res["stderr"] = append(res["stderr"], line)
 	}
 
 	if rst.Error != nil {
 		logger.Printf("Error: %v\n", rst.Error)
-		res = append(res, fmt.Sprintf("Error: %v", rst.Error))
+		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", rst.Error))
 	}
 
 	logger.Println("<=== END ===>")
