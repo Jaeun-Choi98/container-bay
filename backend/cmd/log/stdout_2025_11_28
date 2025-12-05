@@ -1,0 +1,77 @@
+2025/11/28 14:06:48 [Log Cleanup] Old log files deleted: log\2025_11_11 (Deleted date: 2025-11-11)
+2025/11/28 14:06:48 [Log Cleanup] Old log files deleted: log\2025_11_13 (Deleted date: 2025-11-13)
+2025/11/28 14:06:48 [Log Cleanup] Log cleanup completed: 2 files deleted in total
+2025/11/28 14:07:26 [App] Shutting down...
+2025/11/28 14:07:26 [App] Failed to start rest server: http: Server closed
+2025/11/28 14:07:26 [REST] REST goroutine terminated
+2025/11/28 14:07:26 [App] Application is terminated
+2025/11/28 14:07:26 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 14:07:58 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 14:10:01 [App] Shutting down...
+2025/11/28 14:10:01 [App] Failed to start rest server: http: Server closed
+2025/11/28 14:10:01 [REST] REST goroutine terminated
+2025/11/28 14:10:01 [App] Application is terminated
+2025/11/28 14:10:01 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 14:10:03 [API Service] failed to init: failed to init
+2025/11/28 14:10:03 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 14:10:26 [App] Shutting down...
+2025/11/28 14:10:26 [App] Failed to start rest server: http: Server closed
+2025/11/28 14:10:26 [REST] REST goroutine terminated
+2025/11/28 14:10:26 [App] Application is terminated
+2025/11/28 14:10:26 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 14:10:59 [API Service] failed to init: failed to init
+2025/11/28 14:10:59 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 14:11:05 [App] Shutting down...
+2025/11/28 14:11:05 [App] Failed to start rest server: http: Server closed
+2025/11/28 14:11:05 [REST] REST goroutine terminated
+2025/11/28 14:11:05 [App] Application is terminated
+2025/11/28 14:11:05 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 14:11:48 [API Service] failed to init: fail docker login
+2025/11/28 14:11:48 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 14:11:55 [App] Shutting down...
+2025/11/28 14:11:55 [App] Failed to start rest server: http: Server closed
+2025/11/28 14:11:55 [REST] REST goroutine terminated
+2025/11/28 14:11:55 [App] Application is terminated
+2025/11/28 14:11:55 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 18:26:39 [API Service] failed to init: fail docker login
+2025/11/28 18:26:39 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 18:26:57 [App] Shutting down...
+2025/11/28 18:26:57 [App] Failed to start rest server: http: Server closed
+2025/11/28 18:26:57 [REST] REST goroutine terminated
+2025/11/28 18:26:57 [App] Application is terminated
+2025/11/28 18:26:57 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 20:19:55 [API Service] failed to init: failed to create docker login session: duplicate url: 192.168.0.12:443
+2025/11/28 20:19:55 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 20:20:13 [App] Shutting down...
+2025/11/28 20:20:13 [App] Failed to start rest server: http: Server closed
+2025/11/28 20:20:13 [REST] REST goroutine terminated
+2025/11/28 20:20:13 [App] Application is terminated
+2025/11/28 20:20:13 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 20:26:28 [API Service] failed to init: failed to create docker login session: duplicate url: 192.168.0.12:443
+2025/11/28 20:26:28 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 20:26:32 [App] Shutting down...
+2025/11/28 20:26:32 [App] Failed to start rest server: http: Server closed
+2025/11/28 20:26:32 [REST] REST goroutine terminated
+2025/11/28 20:26:32 [App] Application is terminated
+2025/11/28 20:26:32 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 20:44:42 [API Service] failed to init: failed to find login session after created docker login session: json: cannot unmarshal object into Go value of type redisorm.Model
+2025/11/28 20:44:42 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 20:44:52 [App] Shutting down...
+2025/11/28 20:44:52 [App] Failed to start rest server: http: Server closed
+2025/11/28 20:44:52 [REST] REST goroutine terminated
+2025/11/28 20:44:52 [App] Application is terminated
+2025/11/28 20:44:52 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 20:55:39 [API Service] failed to init: failed to find login session after created docker login session: json: cannot unmarshal object into Go value of type redisorm.Model
+2025/11/28 20:55:39 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 20:55:43 [App] Shutting down...
+2025/11/28 20:55:43 [App] Failed to start rest server: http: Server closed
+2025/11/28 20:55:43 [REST] REST goroutine terminated
+2025/11/28 20:55:43 [App] Application is terminated
+2025/11/28 20:55:43 [Log Cleanup] Log cleanup goroutine terminated
+2025/11/28 21:11:05 [API Service] create docker login session in redis, expire: 10m0s
+2025/11/28 21:11:05 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/28 21:11:17 [App] Shutting down...
+2025/11/28 21:11:17 [App] Failed to start rest server: http: Server closed
+2025/11/28 21:11:17 [REST] REST goroutine terminated
+2025/11/28 21:11:17 [App] Application is terminated
+2025/11/28 21:11:17 [Log Cleanup] Log cleanup goroutine terminated

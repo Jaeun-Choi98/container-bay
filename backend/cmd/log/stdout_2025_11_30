@@ -1,0 +1,13 @@
+2025/11/30 17:53:27 [Redis] Cleanup worker started (interval: 3m0s)
+2025/11/30 17:53:27 [API Service] create docker login session in redis, expire: 1m0s
+2025/11/30 17:53:27 [Log Cleanup] Log cleanup completed: 0 files deleted in total
+2025/11/30 17:56:27 [Redis] Starting cleanup...
+2025/11/30 17:56:27 [Redis] Cleaned 1 records
+2025/11/30 17:59:27 [Redis] Starting cleanup...
+2025/11/30 18:02:27 [Redis] Starting cleanup...
+2025/11/30 18:04:12 [App] Shutting down...
+2025/11/30 18:04:12 [App] Failed to start rest server: http: Server closed
+2025/11/30 18:04:12 [REST] REST goroutine terminated
+2025/11/30 18:04:12 [Redis] Cleanup worker routine is terminated
+2025/11/30 18:04:12 [App] Application is terminated
+2025/11/30 18:04:12 [Log Cleanup] Log cleanup goroutine terminated
