@@ -16,10 +16,15 @@ func (e *ShellError) Error() string {
 }
 
 type ApiServiceInterface interface {
+	// container
 	DockerPs(host string) (map[string][]string, error)
 	CloneAndBuild(url, pjtName, contextPath string) (map[string][]string, error)
 	RunContainer(host *request.PostRunProjectRequest) (map[string][]string, error)
 	StopContainer(req *request.PostDockerStopRequest) (map[string][]string, error)
 	RestartContainer(req *request.PostDockerRestartRequest) (map[string][]string, error)
 	RemoveContainer(req *request.PostDockerRemoveRequest) (map[string][]string, error)
+
+	// image
+	ImageLs(host string) (map[string][]string, error)
+	ImageRm(reqs *request.PostImageRmRequest) (map[string][]string, error)
 }

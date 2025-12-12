@@ -74,7 +74,6 @@ class ApiClient {
   async uploadFile<T>(endpoint: string, file: File, additionalData?: Record<string, string>): Promise<T> {
     const formData = new FormData();
     formData.append('file', file);
-
     if (additionalData) {
       Object.entries(additionalData).forEach(([key, value]) => {
         formData.append(key, value);

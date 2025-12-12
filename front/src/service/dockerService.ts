@@ -2,7 +2,7 @@ import { apiClient } from "../api/client";
 import { BaseResponse } from "../api/model/response";
 import { DockerImageListRequest, DockerPsRequest, DockerRemoveRequest, DockerRestartRequest, DockerRunRequest, DockerStopRequest, DokcerBuildRequest } from "../api/model/request";
 
-class DockerServicc {
+class DockerService {
 
   async ContainerPs(data: DockerPsRequest): Promise<BaseResponse> {
     return apiClient.post<BaseResponse>('/ps', data);
@@ -31,6 +31,10 @@ class DockerServicc {
   async GetImageList(data: DockerImageListRequest): Promise<BaseResponse> {
     return apiClient.post<BaseResponse>('/image-ls', data);
   }
+
+  async ImageRemove(data: DockerRemoveRequest): Promise<BaseResponse> {
+    return apiClient.post<BaseResponse>('/image-rm', data);
+  }
 }
 
-export const dockerService = new DockerServicc();
+export const dockerService = new DockerService();

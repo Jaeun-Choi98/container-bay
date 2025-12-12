@@ -31,19 +31,25 @@ func (t *Controller) RoutingPath() {
 	t.Router.Use(middleware.StoreMemberIdToContext())
 
 	// == Docker ==
+	// Container
 	t.Router.POST("/ps", t.PostDockerPs)
 	t.Router.POST("/build", t.PostBuildProject)
 	t.Router.POST("/run", t.PostRunProject)
 	t.Router.POST("/stop", t.PostDockerStop)
-	t.Router.POST("/restart", nil)
+	t.Router.POST("/restart", t.PostDockerRestart)
 	t.Router.POST("/rm", t.PostDockerRemove)
 
-	// == File Upload ==
+	// Image
+	t.Router.POST("/image-ls", t.PostImageLs)
+	t.Router.POST("/image-rm", t.PostImageRm)
+
+	// 개발해야할 api
+
+	// == 현재 사용하지 않는 api ==
+	// File Upload
 	t.Router.POST("/upload-file", t.PostUploadFile)
 	// path 아래에 폴더가 복사됨.
 	t.Router.POST("/upload-targz", t.PostUploadTarGz)
-
-	// 개발해야할 api
 
 	// SPA 미들웨어 동작 방식에 의해 제일 아래에 배치
 	//t.Router.Use(middleware.SpaHandlerOther("/vworld", "vworld"))

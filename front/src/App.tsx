@@ -5,7 +5,8 @@ import logo from './logo.svg';
 import './App.css';
 
 import ContainerManager from './pages/ContainerManager'
-
+import ImageManager from './pages/ImageManager';
+import VolumeManager from './pages/VolumeManager';
 
 function App(): JSX.ReactElement {
   return (
@@ -14,10 +15,11 @@ function App(): JSX.ReactElement {
         <Routes>
           <Route path="/" element={<ReactApp />}></Route>
           <Route path="/container" element={<ContainerManager />}></Route>
+          <Route path="/image" element={<ImageManager />}></Route>
+          <Route path="/volume-directory" element={<VolumeManager />}></Route>
         </Routes>
       </Router>
-
-    </div>
+    </div >
   );
 }
 
@@ -27,7 +29,7 @@ const ReactApp: React.FC = (): JSX.ReactElement => {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
 
-        <Link to="/home"
+        <Link to="/container"
           className="App-link"
         >
           Go Container Bay

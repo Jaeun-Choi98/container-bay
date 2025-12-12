@@ -36,3 +36,8 @@ export interface DockerRemoveRequest {
 export interface DockerImageListRequest {
   host: string;
 }
+
+export interface DcokerImageRemoveRequest {
+  host: string;
+  name: string;
+}

@@ -19,6 +19,11 @@ func (t *Controller) PostDockerPs(c *gin.Context) {
 		return
 	}
 
+	if reqs.Host == "" {
+		c.Error(httperr.BADREQUEST.Add(nil, response.FAIL))
+		return
+	}
+
 	res, err := t.ApiSvc.DockerPs(reqs.Host)
 	if err != nil {
 		var shellError *service.ShellError

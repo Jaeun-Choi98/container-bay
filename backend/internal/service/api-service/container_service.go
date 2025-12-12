@@ -234,10 +234,10 @@ func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) (map[strin
 		script.WriteString("-p ")
 		script.WriteString(fmt.Sprintf("%s ", p))
 	}
-
 	script.WriteString("-v ")
+	// e.g. /abc/a => /tmp/volume/abc/a (/tmp/volume은 Volume Directory)
 	for _, v := range req.Volume {
-		script.WriteString(fmt.Sprintf("%s ", v))
+		script.WriteString(fmt.Sprintf("%s ", filepath.Join(s.Cfg.VolumeDir, v)))
 	}
 
 	script.WriteString("-e ")
@@ -405,7 +405,7 @@ func (a *ApiService) RestartContainer(req *request.PostDockerRestartRequest) (ma
 	executor := shell.NewScriptExecutor(a.Cfg.ShellDir)
 
 	script := fmt.Sprintf(`
-		echo %s | sudo -S docker -H %s rm %s
+		echo %s | sudo -S docker -H %s restart %s
 	`, a.Cfg.BuildSvrPasswd, dockerDaemonHost, req.ContainerName)
 
 	result, err := executor.Execute(context.Background(), a.Cfg.ShellName, "docker_restart.sh", script, true)
@@ -472,7 +472,7 @@ func (a *ApiService) RestartContainer(req *request.PostDockerRestartRequest) (ma
 	if result.ExitCode != 0 {
 		return res, &service.ShellError{
 			ExitCode: result.ExitCode,
-			Msg:      "occured issue in processing docker_rm.sh",
+			Msg:      "occured issue in processing docker_restart.sh",
 		}
 	}
 

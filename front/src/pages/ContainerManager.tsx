@@ -6,6 +6,7 @@ import {
   , DockerRestartRequest
 } from '../api/model/request';
 import { BaseResponse } from '../api/model/response';
+import Nav from '../component/header';
 
 /*
 host: string;
@@ -112,6 +113,7 @@ const ContainerManage: React.FC = (): React.ReactElement => {
 
   return (
     <div>
+      <Nav></Nav>
       <h1>Container Management</h1>
 
       {/* 컨테이너 목록 조회 */}
@@ -119,11 +121,12 @@ const ContainerManage: React.FC = (): React.ReactElement => {
         <h2>Container List</h2>
         <input
           type="text"
-          placeholder="Host"
+          placeholder="Host Docker Daemon(e.g. 192.168.0.1:2375)"
           value={host}
           onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
             setHost(e.target.value)
           }
+          style={{ width: '300px', padding: '2px' }}
         />
         <button onClick={handleGetContainers} disabled={psApi.loading}>
           {psApi.loading ? 'Loading...' : 'Get Containers'}
@@ -151,7 +154,7 @@ const ContainerManage: React.FC = (): React.ReactElement => {
           </pre>
         }
         {psApi.result && psApi.result.result === 0 && (
-          <pre>{psApi.result.data["stdout"].slice(1).map((item: string, index: number): React.ReactElement => {
+          <pre style={{ color: 'green' }}>{psApi.result.data["stdout"].slice(1).map((item: string, index: number): React.ReactElement => {
             const colums = item.split(';');
             return (
               <tr key={index} style={{ tableLayout: 'fixed', width: '100%' }}>
@@ -294,7 +297,7 @@ const ContainerManage: React.FC = (): React.ReactElement => {
             required
           />
           <button type="submit" disabled={stopApi.loading}>
-            {stopApi.loading ? 'Running...' : 'Stop Container'}
+            {stopApi.loading ? 'Stopping...' : 'Stop Container'}
           </button>
         </form>
         {stopApi.error && <div style={{ color: 'red' }}>Error: {stopApi.error}</div>}
@@ -351,7 +354,7 @@ const ContainerManage: React.FC = (): React.ReactElement => {
             required
           />
           <button type="submit" disabled={stopApi.loading}>
-            {restartApi.loading ? 'Running...' : 'Restart Container'}
+            {restartApi.loading ? 'Restarting...' : 'Restart Container'}
           </button>
         </form>
         {restartApi.error && <div style={{ color: 'red' }}>Error: {restartApi.error}</div>}
@@ -408,7 +411,7 @@ const ContainerManage: React.FC = (): React.ReactElement => {
             required
           />
           <button type="submit" disabled={removeApi.loading}>
-            {removeApi.loading ? 'Running...' : 'Remove Container'}
+            {removeApi.loading ? 'Removing...' : 'Remove Container'}
           </button>
         </form>
         {removeApi.error && <div style={{ color: 'red' }}>Error: {removeApi.error}</div>}
@@ -476,7 +479,7 @@ const ContainerManage: React.FC = (): React.ReactElement => {
           />
           <button
             type="submit" disabled={buildApi.loading}>
-            {runApi.loading ? 'Running...' : 'Build Image'}
+            {runApi.loading ? 'Building...' : 'Build Image'}
           </button>
         </form>
         {buildApi.error && <div style={{ color: 'red' }}>Error: {buildApi.error}</div>}
@@ -521,15 +524,6 @@ const ContainerManage: React.FC = (): React.ReactElement => {
           </pre>
         </div>)}
       </section >
-
-      {/* 볼륨 디렉토리 */}
-      < section >
-        <h2>Volume Directory</h2>
-        <form>
-
-        </form>
-      </section >
-
     </div >
   );
 };
