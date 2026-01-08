@@ -17,5 +17,5 @@ func (d *DockerLoginSession) GetIndexFields() map[string]any {
 	}
 }
 func (d *DockerLoginSession) GetTTL() time.Duration {
-	return 1 * time.Minute
+	return 60 * time.Minute
 }
