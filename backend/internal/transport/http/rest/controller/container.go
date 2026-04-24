@@ -142,6 +142,36 @@ func (t *Controller) PostDockerRemove(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SUCCESS.Add(res))
 }
 
+func (t *Controller) PostDockerLogs(c *gin.Context) {
+	reqs := &request.PostDockerLogsRequest{}
+	if err := c.BindJSON(reqs); err != nil {
+		c.Error(httperr.INNER_ERROR.Add(err, response.FAIL))
+		return
+	}
+
+	if reqs.Host == "" || reqs.ContainerName == "" {
+		c.Error(httperr.BADREQUEST.Add(fmt.Errorf("need info(host, name)"), response.INVAILD_DATA))
+		return
+	}
+
+	if reqs.Tail <= 0 {
+		reqs.Tail = 100
+	}
+
+	res, err := t.ApiSvc.DockerLogs(reqs)
+	if err != nil {
+		var shellError *service.ShellError
+		if errors.As(err, &shellError) {
+			c.JSON(http.StatusOK, response.FAIL.Add(res))
+			return
+		}
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SUCCESS.Add(res))
+}
+
 func (t *Controller) PostDockerRestart(c *gin.Context) {
 	reqs := &request.PostDockerRestartRequest{}
 	if err := c.BindJSON(reqs); err != nil {

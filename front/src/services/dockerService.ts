@@ -1,6 +1,6 @@
 import { apiClient } from "../api/client";
-import { BaseResponse } from "../api/model/response";
-import { DockerImageListRequest, DockerPsRequest, DockerRemoveRequest, DockerRestartRequest, DockerRunRequest, DockerStopRequest, DokcerBuildRequest } from "../api/model/request";
+import { BaseResponse } from "../api/types/response";
+import { DockerImageListRequest, DockerLogsRequest, DockerPsRequest, DockerRemoveRequest, DockerRestartRequest, DockerRunRequest, DockerStopRequest, DokcerBuildRequest } from "../api/types/request";
 
 class DockerService {
 
@@ -34,6 +34,10 @@ class DockerService {
 
   async ImageRemove(data: DockerRemoveRequest): Promise<BaseResponse> {
     return apiClient.post<BaseResponse>('/image-rm', data);
+  }
+
+  async GetContainerLogs(data: DockerLogsRequest): Promise<BaseResponse> {
+    return apiClient.post<BaseResponse>('/logs', data);
   }
 }
 

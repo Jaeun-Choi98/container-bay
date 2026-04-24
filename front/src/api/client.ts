@@ -22,13 +22,21 @@ class ApiClient {
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    const response = await fetch(url, {
-      ...options,
-      headers: this.getHeaders(options?.headers),
-    });
+    let response: Response;
 
+    // 네트워크 에러만 catch
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: this.getHeaders(options?.headers),
+      });
+    } catch (e) {
+      throw new Error(`network error: ${e}`);
+    }
+
+    // HTTP 에러는 별도 처리
     if (!response.ok) {
-      const errorData = await response.json().catch((err) => console.log(err));
+      const errorData = await response.json().catch(() => null);
       throw new Error(
         errorData?.message || `http status: ${response.status}`
       );
@@ -41,33 +49,42 @@ class ApiClient {
     return await response.json();
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, hearders?: HeadersInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'GET',
+      headers: hearders
+    });
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: any, hearders?: HeadersInit): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
+      headers: hearders
     });
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: any, hearders?: HeadersInit): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
+      headers: hearders
     });
   }
 
-  async patch<T>(endpoint: string, data?: any): Promise<T> {
+  async patch<T>(endpoint: string, data?: any, hearders?: HeadersInit): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(data),
+      headers: hearders
     });
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+  async delete<T>(endpoint: string, hearders?: HeadersInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'DELETE',
+      headers: hearders
+    });
   }
 
   // 파일 업로드용

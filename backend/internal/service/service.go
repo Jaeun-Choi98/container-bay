@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	redismodel "github.com/Jaeun-Choi98/container-bay/internal/redis/redis-model"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/request"
 )
 
@@ -27,4 +28,11 @@ type ApiServiceInterface interface {
 	// image
 	ImageLs(host string) (map[string][]string, error)
 	ImageRm(reqs *request.PostImageRmRequest) (map[string][]string, error)
+
+	DockerLogs(req *request.PostDockerLogsRequest) (map[string][]string, error)
+
+	// daemon registry
+	GetDaemons() ([]*redismodel.DockerDaemon, error)
+	AddDaemon(req *request.PostAddDaemonRequest) error
+	RemoveDaemon(id int64) error
 }

@@ -33,3 +33,9 @@ type PostDockerRestartRequest struct {
 	Host          string `json:"host"`
 	ContainerName string `json:"name"`
 }
+
+type PostDockerLogsRequest struct {
+	Host          string `json:"host"`
+	ContainerName string `json:"name"`
+	Tail          int    `json:"tail"`
+}

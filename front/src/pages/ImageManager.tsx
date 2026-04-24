@@ -1,167 +1,121 @@
 import React, { useState } from 'react';
 import { useApi } from '../api/hooks/useApi';
-import { BaseResponse } from '../api/model/response';
-import { DockerImageListRequest, DcokerImageRemoveRequest } from '../api/model/request';
-import { dockerService } from '../service/dockerService';
-import Nav from '../component/header';
+import { BaseResponse } from '../api/types/response';
+import { DockerImageListRequest, DcokerImageRemoveRequest } from '../api/types/request';
+import { dockerService } from '../services/dockerService';
+import Nav from '../components/Header/Header';
 
 const ImageManager: React.FC = (): React.ReactElement => {
   const [host, setHost] = useState<string>('');
   const [name, setName] = useState<string>('');
 
-  const getImgListApi = useApi<BaseResponse>((data: DockerImageListRequest): Promise<BaseResponse> => {
-    return dockerService.GetImageList(data);
-  })
-
-  const imgRemoveApi = useApi<BaseResponse>((data: DcokerImageRemoveRequest): Promise<BaseResponse> => {
-    return dockerService.ImageRemove(data);
-  })
+  const getImgListApi = useApi<BaseResponse>((data: DockerImageListRequest) => dockerService.GetImageList(data));
+  const imgRemoveApi  = useApi<BaseResponse>((data: DcokerImageRemoveRequest) => dockerService.ImageRemove(data));
 
   const handleGetImageList = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     getImgListApi.reset();
-    return getImgListApi.execute({
-      host: host,
-    })
-  }
+    await getImgListApi.execute({ host });
+  };
 
   const handleImageRemove = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     imgRemoveApi.reset();
-    return imgRemoveApi.execute(
-      {
-        host: host,
-        name: name,
-      }
-    );
-  }
+    await imgRemoveApi.execute({ host, name });
+  };
+
+  const renderErrorBlock = (api: typeof getImgListApi) =>
+    api.result && api.result.result !== 0 ? (
+      <div className="result-error-block">
+        {api.result.data['stderr'].slice(1).map((item: string, idx: number) =>
+          item.split(';').filter(col => col !== '').map((col, i) => (
+            <div key={`${idx}-${i}`} className="result-error-line">{col}</div>
+          ))
+        )}
+      </div>
+    ) : null;
+
+  const renderTableResult = (api: typeof getImgListApi) =>
+    api.result && api.result.result === 0 ? (
+      <div className="result-table-wrap">
+        <table className="result-table">
+          <tbody>
+            {api.result.data['stdout'].slice(1).map((item: string, idx: number) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                {item.split(';').filter(col => col !== '').map((col, i) => (
+                  <td key={i}>{col}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : null;
 
   return (
     <div>
-      <Nav></Nav>
-      {/* 이미지 리스트 */}
-      <h2>Image List</h2>
-      <section>
-        <input
-          type='text'
-          placeholder='Host Docker Daemon(e.g. 192.168.0.1:2375)'
-          value={host}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-            setHost(e.target.value)
-          }
-          style={{ width: '300px', padding: '2px' }}
-          required
-        />
-        <button onClick={handleGetImageList} disabled={getImgListApi.loading}>
-          {getImgListApi.loading ? 'Loading...' : 'Get Image List'}
-        </button>
-        {getImgListApi.error && <div style={{ color: 'red' }}>Error: {getImgListApi.error}</div>}
-        {getImgListApi.result?.result !== 0 &&
-          <pre style={{ color: 'red' }}>
-            {getImgListApi.result?.data['stderr'].slice(1).map((item: string, index: number): React.ReactElement => {
-              const colums = item.split(';');
-              return (
-                <ul style={{ margin: 'auto', width: '50%' }}>
-                  {colums.map((col: string, i: number): React.ReactElement | null => {
-                    if (col === "") return null
-                    return (
-                      <li key={i} style={{ width: '100%', padding: '5px', listStyle: 'none' }}>{col}</li>
-                    );
-                  })}
-                </ul>
-              )
-            })}
-          </pre>
-        }
-        {getImgListApi.result?.result === 0 &&
-          <pre style={{ color: 'green' }}>
-            {getImgListApi.result?.data["stdout"].slice(1).map((item: string, index: number): React.ReactElement => {
-              const colums = item.split(';');
-              return (
-                <tr key={index} style={{ tableLayout: 'fixed', width: '100%' }}>
-                  <td style={{ width: '5%', border: '1px solid #ccc', padding: '5px' }}>{index !== 0 ? index : ""}</td>
-                  {
-                    colums.map((col: string, i: number): React.ReactElement | null => {
-                      if (col === "") return null;
-                      return (
-                        <td key={i} style={{ width: '5%', border: '1px solid #ccc', padding: '5px' }}>{col} </td>
-                      );
-                    })
-                  }
-                </tr>
-              );
-            })}
-          </pre>
-        }
-      </section>
+      <Nav />
+      <div className="page">
+        <h1 className="page-title">Image Management</h1>
 
-      {/*이미지 삭제*/}
-      <section>
-        <h2>Image Remove</h2>
-        <input
-          type='text'
-          placeholder='Host Docker Daemon(e.g. 192.168.0.1:2375)'
-          value={host}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setHost(e.target.value);
-          }}
-          style={{ width: '300px', padding: '2px' }}
-          required
-        />
-        <input
-          type='text'
-          placeholder='Image name'
-          value={name}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setName(e.target.value);
-          }}
-          style={{ width: '200px', padding: '2px' }}
-          required
-        />
-        <button onClick={handleImageRemove} disabled={imgRemoveApi.loading}>
-          {imgRemoveApi.loading ? 'Removing...' : 'Remove Image'}
-        </button>
-        {imgRemoveApi.error && <div style={{ color: 'red' }}>Error: {imgRemoveApi.error}</div>}
-        {imgRemoveApi.result?.result !== 0 &&
-          <pre style={{ color: 'red' }}>
-            {imgRemoveApi.result?.data['stderr'].slice(1).map((item: string, index: number): React.ReactElement => {
-              const colums = item.split(';');
-              return (
-                <ul style={{ margin: 'auto', width: '50%' }}>
-                  {colums.map((col: string, i: number): React.ReactElement | null => {
-                    if (col === "") return null
-                    return (
-                      <li key={i} style={{ whiteSpace: 'pre-wrap', width: '100%', padding: '5px', listStyle: 'none' }}>{col}</li>
-                    );
-                  })}
-                </ul>
-              )
-            })}
-          </pre>
-        }
-        {imgRemoveApi.result?.result === 0 &&
-          <pre style={{ color: 'green' }}>
-            {imgRemoveApi.result?.data["stdout"].slice(1).map((item: string, index: number): React.ReactElement => {
-              const colums = item.split(';');
-              return (
-                <tr key={index} style={{ tableLayout: 'fixed', width: '100%' }}>
-                  <td style={{ width: '5%', border: '1px solid #ccc', padding: '5px' }}>{index !== 0 ? index : ""}</td>
-                  {
-                    colums.map((col: string, i: number): React.ReactElement | null => {
-                      if (col === "") return null;
-                      return (
-                        <td key={i} style={{ width: '5%', border: '1px solid #ccc', padding: '5px' }}>{col} </td>
-                      );
-                    })
-                  }
-                </tr>
-              );
-            })}
-          </pre>
-        }
-      </section>
+        {/* Image List */}
+        <section className="card">
+          <h2 className="card-title">Image List</h2>
+          <form className="form-row" onSubmit={handleGetImageList}>
+            <input
+              className="input"
+              type="text"
+              placeholder="Host Docker Daemon (e.g. 192.168.0.1:2375)"
+              value={host}
+              onChange={e => setHost(e.target.value)}
+              style={{ width: '300px' }}
+              required
+            />
+            <button className="btn btn-primary" type="submit" disabled={getImgListApi.loading}>
+              {getImgListApi.loading ? 'Loading...' : 'Get Image List'}
+            </button>
+          </form>
+          {getImgListApi.error && <div className="api-error">{getImgListApi.error}</div>}
+          {renderErrorBlock(getImgListApi)}
+          {renderTableResult(getImgListApi)}
+        </section>
+
+        {/* Image Remove */}
+        <section className="card">
+          <h2 className="card-title">Remove Image</h2>
+          <form className="form-row" onSubmit={handleImageRemove}>
+            <input
+              className="input"
+              type="text"
+              placeholder="Host Docker Daemon (e.g. 192.168.0.1:2375)"
+              value={host}
+              onChange={e => setHost(e.target.value)}
+              style={{ width: '300px' }}
+              required
+            />
+            <input
+              className="input"
+              type="text"
+              placeholder="Image Name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              style={{ width: '200px' }}
+              required
+            />
+            <button className="btn btn-primary" type="submit" disabled={imgRemoveApi.loading}>
+              {imgRemoveApi.loading ? 'Removing...' : 'Remove Image'}
+            </button>
+          </form>
+          {imgRemoveApi.error && <div className="api-error">{imgRemoveApi.error}</div>}
+          {renderErrorBlock(imgRemoveApi)}
+          {imgRemoveApi.result && imgRemoveApi.result.result === 0 && (
+            <div className="result-success-msg">✓ Image removed successfully</div>
+          )}
+        </section>
+      </div>
     </div>
-  )
-}
+  );
+};
 
 export default ImageManager;

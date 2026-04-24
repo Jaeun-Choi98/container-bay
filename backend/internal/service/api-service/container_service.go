@@ -479,6 +479,84 @@ func (a *ApiService) RestartContainer(req *request.PostDockerRestartRequest) (ma
 	return res, nil
 }
 
+func (s *ApiService) DockerLogs(req *request.PostDockerLogsRequest) (map[string][]string, error) {
+	hostLocalSepSlash := filepath.FromSlash(req.Host)
+	hostIpAndPort, _ := strings.CutPrefix(hostLocalSepSlash, filepath.FromSlash("tcp://"))
+	dockerDaemonHost := filepath.FromSlash(fmt.Sprintf("tcp://%s", hostIpAndPort))
+
+	executor := shell.NewScriptExecutor(s.Cfg.ShellDir)
+
+	script := fmt.Sprintf(`
+		echo %s | sudo -S docker -H %s logs --tail %d %s
+	`, s.Cfg.BuildSvrPasswd, dockerDaemonHost, req.Tail, req.ContainerName)
+
+	result, err := executor.Execute(context.Background(), s.Cfg.ShellName, "docker_logs.sh", script, true)
+	if err != nil {
+		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_logs.sh): %v", err), response.FAIL)
+	}
+
+	logger.Println("<=== Start docker_logs.sh ===>")
+	logger.Printf("content: %s", script)
+
+	res := make(map[string][]string)
+
+	logger.Println("=== Execution Result ===")
+	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
+
+	logger.Printf("Duration: %v\n", result.Duration)
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
+
+	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
+
+	logger.Println("=== STDOUT ===")
+	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
+	for _, line := range result.Stdout {
+		logger.Println(line)
+		var parseStr strings.Builder
+		splitStr := strings.Split(line, "  ")
+		for _, str := range splitStr {
+			trimStr := strings.TrimSpace(str)
+			if trimStr != "" {
+				parseStr.WriteString(trimStr)
+				parseStr.WriteString(";")
+			}
+		}
+		res["stdout"] = append(res["stdout"], parseStr.String())
+	}
+
+	logger.Println("=== STDERR ===")
+	res["stderr"] = append(res["stderr"], "=== STDERR ===")
+	for _, line := range result.Stderr {
+		logger.Println(line)
+		var parseStr strings.Builder
+		splitStr := strings.Split(line, "  ")
+		for _, str := range splitStr {
+			trimStr := strings.TrimSpace(str)
+			if trimStr != "" {
+				parseStr.WriteString(trimStr)
+				parseStr.WriteString(";")
+			}
+		}
+		res["stderr"] = append(res["stderr"], parseStr.String())
+	}
+
+	if result.Error != nil {
+		logger.Printf("Error: %v\n", result.Error)
+		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
+	}
+	logger.Println("<=== END ===>")
+
+	if result.ExitCode != 0 {
+		return res, &service.ShellError{
+			ExitCode: result.ExitCode,
+			Msg:      "occured issue in processing docker_logs.sh",
+		}
+	}
+
+	return res, nil
+}
+
 func (a *ApiService) RemoveContainer(req *request.PostDockerRemoveRequest) (map[string][]string, error) {
 	hostLocalSepSlash := filepath.FromSlash(req.Host)
 	hostIpAndPort, _ := strings.CutPrefix(hostLocalSepSlash, filepath.FromSlash("tcp://"))

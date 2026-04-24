@@ -41,3 +41,14 @@ export interface DcokerImageRemoveRequest {
   host: string;
   name: string;
 }
+
+export interface DockerLogsRequest {
+  host: string;
+  name: string;
+  tail: number;
+}
+
+export interface AddDaemonRequest {
+  host: string;
+  label: string;
+}

@@ -1,5 +1,5 @@
 import { apiClient } from "../api/client";
-import { BaseResponse } from "../api/model/response";
+import { BaseResponse } from "../api/types/response";
 
 class FileService {
   async uploadFile(file: File, additionalData?: Record<string, string>): Promise<BaseResponse> {

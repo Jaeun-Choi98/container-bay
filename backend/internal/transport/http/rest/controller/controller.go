@@ -38,6 +38,12 @@ func (t *Controller) RoutingPath() {
 	t.Router.POST("/stop", t.PostDockerStop)
 	t.Router.POST("/restart", t.PostDockerRestart)
 	t.Router.POST("/rm", t.PostDockerRemove)
+	t.Router.POST("/logs", t.PostDockerLogs)
+
+	// Daemon registry
+	t.Router.GET("/daemons", t.GetDaemons)
+	t.Router.POST("/daemons", t.PostAddDaemon)
+	t.Router.DELETE("/daemons/:id", t.DeleteDaemon)
 
 	// Image
 	t.Router.POST("/image-ls", t.PostImageLs)

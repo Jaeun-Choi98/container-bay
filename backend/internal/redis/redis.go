@@ -79,6 +79,7 @@ func GetRepository[T redisorm.Model](key redismodel.RepoKey) *redisorm.Repositor
 
 func LoadDefaultRepo() {
 	AddRepository(redismodel.DockerLoginSessionKey, &redismodel.DockerLoginSession{})
+	AddRepository(redismodel.DockerDaemonKey, &redismodel.DockerDaemon{})
 }
 
 func StartCleanupWorker(interval time.Duration) {
