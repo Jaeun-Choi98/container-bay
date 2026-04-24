@@ -261,6 +261,51 @@ code {
   border-bottom-color: var(--accent);
 }
 
+/* ── Sidebar layout ────────────────────────────────── */
+.page-with-sidebar {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.page-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 72px;
+}
+
+.sidebar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-input {
+  width: 100%;
+}
+
+.sidebar-btn {
+  width: 100%;
+  padding: 7px 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 860px) {
+  .page-with-sidebar {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+}
+
 /* ── Daemon list ───────────────────────────────────── */
 .daemon-list {
   display: flex;

@@ -4,11 +4,12 @@ import { useApi } from '../api/hooks/useApi';
 import { dockerService } from '../services/dockerService';
 import {
   DockerPsRequest, DockerRunRequest, DockerStopRequest, DockerRestartRequest,
-  DockerRemoveRequest, DokcerBuildRequest, DockerImageListRequest,
+  DockerRemoveRequest, DockerImageListRequest,
   DcokerImageRemoveRequest, DockerLogsRequest
 } from '../api/types/request';
 import { BaseResponse } from '../api/types/response';
 import Nav from '../components/Header/Header';
+import BuildImageSidebar from '../components/BuildImageSidebar/BuildImageSidebar';
 
 type Tab = 'containers' | 'images' | 'logs';
 
@@ -60,16 +61,11 @@ const ContainersTab: React.FC<{ host: string }> = ({ host }) => {
   const [ports, setPorts]                 = useState('');
   const [volumes, setVolumes]             = useState('');
   const [envs, setEnvs]                   = useState('');
-  const [pjtName, setPjtName]             = useState('');
-  const [gitUrl, setGitUrl]               = useState('');
-  const [buildContext, setBuildContext]   = useState('');
-
   const psApi      = useApi<BaseResponse>((d: DockerPsRequest) => dockerService.ContainerPs(d));
   const runApi     = useApi<BaseResponse>((d: DockerRunRequest) => dockerService.RunContainer(d));
   const stopApi    = useApi<BaseResponse>((d: DockerStopRequest) => dockerService.StopContainer(d));
   const restartApi = useApi<BaseResponse>((d: DockerRestartRequest) => dockerService.RestartContainer(d));
   const removeApi  = useApi<BaseResponse>((d: DockerRemoveRequest) => dockerService.RemovceContainer(d));
-  const buildApi   = useApi<BaseResponse>((d: DokcerBuildRequest) => dockerService.BuildImageAndPush(d));
 
   useEffect(() => {
     psApi.execute({ host });
@@ -171,25 +167,6 @@ const ContainersTab: React.FC<{ host: string }> = ({ host }) => {
         <IdResult api={runApi} label="Container ID" />
       </section>
 
-      {/* Build image */}
-      <section className="card">
-        <h2 className="card-title">Build Docker Image</h2>
-        <form className="form-row" onSubmit={async e => {
-          e.preventDefault();
-          buildApi.reset();
-          await buildApi.execute({ pjt_name: pjtName, url: gitUrl, context_path: buildContext });
-        }}>
-          <input className="input" type="text" placeholder="Project Name" value={pjtName} onChange={e => setPjtName(e.target.value)} style={{ width: '150px' }} required />
-          <input className="input" type="text" placeholder="Git URL" value={gitUrl} onChange={e => setGitUrl(e.target.value)} style={{ width: '280px' }} required />
-          <input className="input" type="text" placeholder="Dockerfile Context Path" value={buildContext} onChange={e => setBuildContext(e.target.value)} style={{ width: '190px' }} required />
-          <button className="btn btn-primary" type="submit" disabled={buildApi.loading}>
-            {buildApi.loading ? 'Building...' : 'Build Image'}
-          </button>
-        </form>
-        <ApiError api={buildApi} />
-        <ErrorBlock api={buildApi} />
-        <TableResult api={buildApi} />
-      </section>
     </div>
   );
 };
@@ -334,9 +311,14 @@ const DaemonDetail: React.FC = (): React.ReactElement => {
           ))}
         </div>
 
-        {tab === 'containers' && <ContainersTab host={host} />}
-        {tab === 'images'     && <ImagesTab host={host} />}
-        {tab === 'logs'       && <LogsTab host={host} />}
+        <div className="page-with-sidebar">
+          <div className="page-main">
+            {tab === 'containers' && <ContainersTab host={host} />}
+            {tab === 'images'     && <ImagesTab host={host} />}
+            {tab === 'logs'       && <LogsTab host={host} />}
+          </div>
+          <BuildImageSidebar />
+        </div>
       </div>
     </div>
   );
