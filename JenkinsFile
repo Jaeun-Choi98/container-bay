@@ -1,0 +1,95 @@
+pipeline {
+    agent any
+    
+    environment {
+        REGISTRY_URL = '10.1.0.118:443'
+        REGISTRY_USER = 'juchoi'
+        IMAGE_NAME = 'container-bay'
+
+        BASE_PATH = '/home/juchoi/project-runtime/container-bay'
+    }
+    
+    stages {
+        stage('Clone') {
+            steps {
+                echo 'Cloning repository...'
+                git branch: 'main',
+                    credentialsId: 'container-bay-git',
+                    url: 'https://github.com/Jaeun-Choi98/container-bay'
+            }
+        }
+        
+        stage('Docker Login') {
+            steps {
+                echo 'Docker login...'
+                script {
+                    withCredentials([
+                        string(credentialsId: 'docker-registry-password', variable: 'DOCKER_PWD')
+                    ]) {
+                        sh """
+                        echo \${DOCKER_PWD} | docker login \${REGISTRY_URL} -u \${REGISTRY_USER} --password-stdin
+                        """
+                    }
+                }
+                echo 'Login successful'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                echo 'Building image...'
+                sh """
+                docker build -t \${REGISTRY_URL}/\${IMAGE_NAME}:latest .
+                """
+                echo 'Build complete'
+            }
+        }
+        
+        stage('Verify') {
+            steps {
+                echo 'Verifying image...'
+                sh """
+                docker images | grep \${IMAGE_NAME}
+                """
+            }
+        }
+        
+        stage('Push') {
+          steps {
+            echo 'Pushing image...'
+            sh """
+            docker push \${REGISTRY_URL}/\${IMAGE_NAME}:latest
+            """
+            echo 'Push complete'
+          }
+        }
+
+        stage('Run Container') {
+          steps{
+           echo 'Running Container...'
+           sh """
+           docker stop \$(docker ps -aqf "name=container-bay") || true
+           docker rm \$(docker ps -aqf "name=container-bay") || true
+           """
+
+           sh """
+           docker run --restart=always -d -e TZ="Asia/Seoul" -v \${BASE_PATH}/mock_store_data.json:/home/app/mock_store_data.json -v \${BASE_PATH}/resource:/home/app/resource -v \${BASE_PATH}/crypto:/home/app/crypto -v \${BASE_PATH}/env.ini:/home/app/env.ini -p 8091:8080 --name container-bay \${REGISTRY_URL}/\${IMAGE_NAME}:latest
+           """    
+          }
+        }
+    }
+    
+    post {
+        always {
+            sh """
+            docker logout \${REGISTRY_URL} || true
+            """
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}

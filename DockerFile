@@ -1,0 +1,35 @@
+# ── Stage 1: Build React frontend ──────────────────────
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
+COPY front/package*.json ./
+RUN npm ci
+COPY front/ ./
+RUN npm run build
+
+# ── Stage 2: Build Go backend ──────────────────────────
+FROM golang:1.24-alpine AS backend-build
+RUN apk add --no-cache git ca-certificates gcc musl-dev
+WORKDIR /app
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+COPY backend/ ./
+RUN go build -o /app/server ./cmd/main.go
+
+# ── Stage 3: Runtime ───────────────────────────────────
+FROM alpine:3.20
+RUN apk add --no-cache \
+  ca-certificates \
+  bash \
+  git \
+  docker-cli \
+  sudo \
+  && echo 'root ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+
+WORKDIR /home/app
+COPY --from=backend-build /app/server ./server
+COPY --from=frontend-build /app/build  ./build
+
+# env.ini must be mounted at runtime — it is never baked into the image:
+#   docker run -v /your/env.ini:/home/app/env.ini -p 8090:8090 container-bay
+EXPOSE 8090
+CMD ["./server"]
