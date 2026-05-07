@@ -23,7 +23,7 @@ func (s *ApiService) DockerPs(host string) (map[string][]string, error) {
 	hostIpAndPort, _ := strings.CutPrefix(hostLocalSepSlash, filepath.FromSlash("tcp://"))
 	dockerDaemonHost := filepath.FromSlash(fmt.Sprintf("tcp://%s", hostIpAndPort))
 
-	// log.Printf("[debug] docker daemon host: %s", dockerDaemonHost)
+	// log.Infof("[debug] docker daemon host: %s", dockerDaemonHost)
 
 	executor := shell.NewScriptExecutor(s.Cfg.ShellDir)
 
@@ -36,26 +36,26 @@ func (s *ApiService) DockerPs(host string) (map[string][]string, error) {
 		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_ps.sh): %v", err), response.FAIL)
 	}
 
-	logger.Println("<=== Run docker_ps.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Run docker_ps.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	// ps의 경우, Port 컬럼은 없을 경우 생략됨 -> port(5번째 인덱스)
 	for lineIndex, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		idx := 0
@@ -75,10 +75,10 @@ func (s *ApiService) DockerPs(host string) (map[string][]string, error) {
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -92,10 +92,10 @@ func (s *ApiService) DockerPs(host string) (map[string][]string, error) {
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	// 정상적으로 처리하지 못함
 	if result.ExitCode != 0 {
@@ -110,7 +110,7 @@ func (s *ApiService) DockerPs(host string) (map[string][]string, error) {
 
 func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) (map[string][]string, error) {
 	pjtPath := filepath.Join(s.Cfg.RepoDir, pjtName)
-	//log.Printf("[debug] pjt_path: %s", pjtPath)
+	//log.Infof("[debug] pjt_path: %s", pjtPath)
 
 	// clone하기 전에, 해당 path에 폴더가 이미 있는지 확인.
 	os.RemoveAll(pjtPath)
@@ -130,10 +130,11 @@ func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) (map[string
 	}
 
 	buildPath := filepath.Join(pjtPath, contextPath)
-	// log.Printf("[debug] build_path: %s", buildPath)
+	// log.Infof("[debug] build_path: %s", buildPath)
 
 	executor := shell.NewScriptExecutor(s.Cfg.ShellDir)
 	dockerRepoUrl := fmt.Sprintf("%s:%s", s.Cfg.DockerRepoIp, s.Cfg.DockerRepoPort)
+
 	script := fmt.Sprintf(`
 		echo %s | sudo -S docker build -t %s:latest %s
 		echo %s | sudo -S docker tag %s:latest %s/%s:latest
@@ -152,25 +153,25 @@ func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) (map[string
 		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_build.sh): %v", err), response.FAIL)
 	}
 
-	logger.Println("<=== Run docker_build.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Run docker_build.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", rst.Duration)
+	logger.Infof("Duration: %v\n", rst.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", rst.Duration))
 
-	logger.Printf("Exit Code: %d\n", rst.ExitCode)
+	logger.Infof("Exit Code: %d\n", rst.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", rst.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	for _, line := range rst.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -182,10 +183,10 @@ func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) (map[string
 		}
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range rst.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -199,10 +200,10 @@ func (s *ApiService) CloneAndBuild(url, pjtName, contextPath string) (map[string
 	}
 
 	if rst.Error != nil {
-		logger.Printf("Error: %v\n", rst.Error)
+		logger.Infof("Error: %v\n", rst.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", rst.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 	// 빌드가 끝났다면 pjt 삭제
 	os.RemoveAll(pjtPath)
 
@@ -222,7 +223,7 @@ func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) (map[strin
 	hostIpAndPort, _ := strings.CutPrefix(hostLocalSepSlash, filepath.FromSlash("tcp://"))
 	dockerDaemonHost := filepath.FromSlash(fmt.Sprintf("tcp://%s", hostIpAndPort))
 
-	//log.Printf("[debug] docker daemon host: %s", dockerDaemonHost)
+	//log.Infof("[debug] docker daemon host: %s", dockerDaemonHost)
 
 	execurator := shell.NewScriptExecutor(s.Cfg.ShellDir)
 	var script strings.Builder
@@ -252,25 +253,25 @@ func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) (map[strin
 		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_run.sh): %v", err), response.FAIL)
 	}
 
-	logger.Println("<=== Run docker_run.sh ===>")
-	logger.Printf("content: %s", script.String())
+	logger.Infoln("<=== Run docker_run.sh ===>")
+	logger.Infof("content: %s", script.String())
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", rst.Duration)
+	logger.Infof("Duration: %v\n", rst.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", rst.Duration))
 
-	logger.Printf("Exit Code: %d\n", rst.ExitCode)
+	logger.Infof("Exit Code: %d\n", rst.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", rst.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	for _, line := range rst.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -282,10 +283,10 @@ func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) (map[strin
 		}
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range rst.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -299,11 +300,11 @@ func (s *ApiService) RunContainer(req *request.PostRunProjectRequest) (map[strin
 	}
 
 	if rst.Error != nil {
-		logger.Printf("Error: %v\n", rst.Error)
+		logger.Infof("Error: %v\n", rst.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", rst.Error))
 	}
 
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	// 정상적으로 처리하지 못함
 	if rst.ExitCode != 0 {
@@ -332,26 +333,26 @@ func (a *ApiService) StopContainer(req *request.PostDockerStopRequest) (map[stri
 			response.FAIL)
 	}
 
-	logger.Println("<=== Start docker_stop.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Start docker_stop.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	// ps의 경우, Port 컬럼은 없을 경우 생략됨 -> port(5번째 인덱스)
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -364,10 +365,10 @@ func (a *ApiService) StopContainer(req *request.PostDockerStopRequest) (map[stri
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -381,10 +382,10 @@ func (a *ApiService) StopContainer(req *request.PostDockerStopRequest) (map[stri
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	// 정상적으로 처리하지 못함
 	if result.ExitCode != 0 {
@@ -414,26 +415,26 @@ func (a *ApiService) RestartContainer(req *request.PostDockerRestartRequest) (ma
 			response.FAIL)
 	}
 
-	logger.Println("<=== Start docker_restart.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Start docker_restart.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	// ps의 경우, Port 컬럼은 없을 경우 생략됨 -> port(5번째 인덱스)
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -446,10 +447,10 @@ func (a *ApiService) RestartContainer(req *request.PostDockerRestartRequest) (ma
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -463,10 +464,10 @@ func (a *ApiService) RestartContainer(req *request.PostDockerRestartRequest) (ma
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	// 정상적으로 처리하지 못함
 	if result.ExitCode != 0 {
@@ -495,24 +496,24 @@ func (s *ApiService) DockerLogs(req *request.PostDockerLogsRequest) (map[string]
 		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_logs.sh): %v", err), response.FAIL)
 	}
 
-	logger.Println("<=== Start docker_logs.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Start docker_logs.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -525,10 +526,10 @@ func (s *ApiService) DockerLogs(req *request.PostDockerLogsRequest) (map[string]
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -542,10 +543,10 @@ func (s *ApiService) DockerLogs(req *request.PostDockerLogsRequest) (map[string]
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	if result.ExitCode != 0 {
 		return res, &service.ShellError{
@@ -574,26 +575,26 @@ func (a *ApiService) RemoveContainer(req *request.PostDockerRemoveRequest) (map[
 			response.FAIL)
 	}
 
-	logger.Println("<=== Start docker_rm.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Start docker_rm.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	// ps의 경우, Port 컬럼은 없을 경우 생략됨 -> port(5번째 인덱스)
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -606,10 +607,10 @@ func (a *ApiService) RemoveContainer(req *request.PostDockerRemoveRequest) (map[
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -623,10 +624,10 @@ func (a *ApiService) RemoveContainer(req *request.PostDockerRemoveRequest) (map[
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	// 정상적으로 처리하지 못함
 	if result.ExitCode != 0 {

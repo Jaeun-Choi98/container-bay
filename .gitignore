@@ -8,7 +8,8 @@
 /front/coverage
 
 # production
-/front/build
+/front/build/
+backend/cmd/build
 
 # misc
 .DS_Store

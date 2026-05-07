@@ -29,7 +29,7 @@ func NewContainer() (*Container, error) {
 	}
 
 	// 커스텀 로거
-	customLogger, err := logger.NewCustomLogger("", config.LogFileMaxAge)
+	customLogger, err := logger.NewCustomLogger("")
 	if err != nil {
 		return nil, err
 	}

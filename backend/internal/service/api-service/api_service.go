@@ -18,7 +18,7 @@ type ApiService struct {
 
 func NewApiService(cfg *config.Config) *ApiService {
 	if err := Init(cfg); err != nil {
-		logger.Printf("[API Service] failed to init: %v", err)
+		logger.Infof("[API Service] failed to init: %v", err)
 	}
 	return &ApiService{
 		Cfg: cfg,
@@ -51,10 +51,10 @@ func Init(cfg *config.Config) error {
 			return fmt.Errorf("failed to find login session after created docker login session: %v", err)
 		}
 		exp, _ := dockerLoginSessionRepo.GetTTL(loginSession.GetId())
-		logger.Printf("[API Service] create docker login session in redis, expire: %v", exp)
+		logger.Infof("[API Service] create docker login session in redis, expire: %v", exp)
 	} else {
 		exp, _ := dockerLoginSessionRepo.GetTTL(dockerLoginSession.GetId())
-		logger.Printf("[API Service] already exist docker login session in redis, expire: %v", exp)
+		logger.Infof("[API Service] already exist docker login session in redis, expire: %v", exp)
 	}
 
 	return nil
@@ -78,9 +78,9 @@ func DockerRepoLogin(cfg *config.Config) error {
 		return fmt.Errorf("[API Service] failed to execute script(docker_login.sh): %v", err)
 	}
 	if len(result.Stderr) != 0 {
-		logger.Println("=== STDERR ===")
+		logger.Infoln("=== STDERR ===")
 		for _, line := range result.Stderr {
-			logger.Println(line)
+			logger.Infoln(line)
 		}
 	}
 	return nil

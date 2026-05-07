@@ -1,8 +1,8 @@
-# ── Stage 1: Build React frontend ──────────────────────
+#── Stage 1: Build React frontend ──────────────────────
 FROM node:20-alpine AS frontend-build
 WORKDIR /app
 COPY front/package*.json ./
-RUN npm ci
+RUN npm install --prefer-offline --no-audit
 COPY front/ ./
 RUN npm run build
 
@@ -27,9 +27,10 @@ RUN apk add --no-cache \
 
 WORKDIR /home/app
 COPY --from=backend-build /app/server ./server
+COPY --from=backend-build /app/cmd/env.ini ./env.ini
 COPY --from=frontend-build /app/build  ./build
 
 # env.ini must be mounted at runtime — it is never baked into the image:
 #   docker run -v /your/env.ini:/home/app/env.ini -p 8090:8090 container-bay
-EXPOSE 8090
+EXPOSE 8080
 CMD ["./server"]

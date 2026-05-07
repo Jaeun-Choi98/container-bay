@@ -33,7 +33,7 @@ func (a *Application) Start() {
 	signal.Notify(detectSig, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-detectSig
-		logger.Println("[App] Shutting down...")
+		logger.Infoln("[App] Shutting down...")
 		a.Shutdown()
 		close(detectSig)
 	}()
@@ -43,7 +43,7 @@ func (a *Application) Start() {
 	go func() {
 		defer a.wg.Done()
 		if err := a.myContainer.Rest.Start(); err != nil {
-			logger.Printf("[App] Failed to start rest server: %v", err)
+			logger.Infof("[App] Failed to start rest server: %v", err)
 		}
 	}()
 
@@ -55,13 +55,13 @@ func (a *Application) Shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := a.myContainer.Rest.Shutdown(ctx); err != nil {
-		logger.Printf("[App] issue in shutting down rest: %v", err)
+		logger.Infof("[App] issue in shutting down rest: %v", err)
 	}
 	a.wg.Wait()
 	if err := redis.CloseRedisClient(); err != nil {
-		logger.Printf("[App] issue in closing close redis client: %v", err)
+		logger.Infof("[App] issue in closing close redis client: %v", err)
 	}
-	logger.Println("[App] Application is terminated")
+	logger.Infoln("[App] Application is terminated")
 	logger.Shutdown()
 	a.mainCtxCacnel()
 }

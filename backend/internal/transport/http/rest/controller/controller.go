@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"path/filepath"
+
 	"github.com/Jaeun-Choi98/container-bay/internal/config"
 	"github.com/Jaeun-Choi98/container-bay/internal/service"
 	"github.com/Jaeun-Choi98/container-bay/internal/transport/http/rest/middleware"
@@ -58,6 +60,7 @@ func (t *Controller) RoutingPath() {
 	t.Router.POST("/upload-targz", t.PostUploadTarGz)
 
 	// SPA 미들웨어 동작 방식에 의해 제일 아래에 배치
+	t.Router.GET("/", func(c *gin.Context) { c.File(filepath.Join("build", "index.html")) })
 	//t.Router.Use(middleware.SpaHandlerOther("/vworld", "vworld"))
 	t.Router.Use(middleware.SpaHandlerRoot("build", "index.html"))
 }

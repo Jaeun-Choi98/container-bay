@@ -67,25 +67,25 @@ func (t *Controller) PostUploadTarGz(c *gin.Context) {
 		return
 	}
 
-	logger.Println("<=== Run targz_extract.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Run targz_extract.sh ===>")
+	logger.Infof("content: %s", script)
 
 	var res map[string][]string
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execute_result"] = append(res["execute_result"], "=== Execution Result ===")
 
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
 
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -97,10 +97,10 @@ func (t *Controller) PostUploadTarGz(c *gin.Context) {
 		}
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -114,10 +114,10 @@ func (t *Controller) PostUploadTarGz(c *gin.Context) {
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	// 정상적으로 처리하지 못함
 	if result.ExitCode != 0 {

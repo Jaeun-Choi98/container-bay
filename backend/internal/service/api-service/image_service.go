@@ -29,22 +29,22 @@ func (s *ApiService) ImageLs(host string) (map[string][]string, error) {
 		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_img_ls.sh): %v", err), response.FAIL)
 	}
 
-	logger.Println("<=== Run docker_img_ls.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Run docker_img_ls.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execut_result"] = append(res["execut_result"], "=== Execution Result ===")
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -57,10 +57,10 @@ func (s *ApiService) ImageLs(host string) (map[string][]string, error) {
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -74,10 +74,10 @@ func (s *ApiService) ImageLs(host string) (map[string][]string, error) {
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	if result.ExitCode != 0 {
 		return res, &service.ShellError{
@@ -106,22 +106,22 @@ func (s *ApiService) ImageRm(reqs *request.PostImageRmRequest) (map[string][]str
 		return nil, httperr.INNER_ERROR.Add(fmt.Errorf("[API Service] failed to execute script(docker_img_rm.sh): %v", err), response.FAIL)
 	}
 
-	logger.Println("<=== Run docker_img_rm.sh ===>")
-	logger.Printf("content: %s", script)
+	logger.Infoln("<=== Run docker_img_rm.sh ===>")
+	logger.Infof("content: %s", script)
 
 	res := make(map[string][]string)
 
-	logger.Println("=== Execution Result ===")
+	logger.Infoln("=== Execution Result ===")
 	res["execut_result"] = append(res["execut_result"], "=== Execution Result ===")
-	logger.Printf("Duration: %v\n", result.Duration)
+	logger.Infof("Duration: %v\n", result.Duration)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Duration: %v", result.Duration))
-	logger.Printf("Exit Code: %d\n", result.ExitCode)
+	logger.Infof("Exit Code: %d\n", result.ExitCode)
 	res["execute_result"] = append(res["execute_result"], fmt.Sprintf("Exit Code: %d", result.ExitCode))
 
-	logger.Println("=== STDOUT ===")
+	logger.Infoln("=== STDOUT ===")
 	res["stdout"] = append(res["stdout"], "=== STDOUT ===")
 	for _, line := range result.Stdout {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -134,10 +134,10 @@ func (s *ApiService) ImageRm(reqs *request.PostImageRmRequest) (map[string][]str
 		res["stdout"] = append(res["stdout"], parseStr.String())
 	}
 
-	logger.Println("=== STDERR ===")
+	logger.Infoln("=== STDERR ===")
 	res["stderr"] = append(res["stderr"], "=== STDERR ===")
 	for _, line := range result.Stderr {
-		logger.Println(line)
+		logger.Infoln(line)
 		var parseStr strings.Builder
 		splitStr := strings.Split(line, "  ")
 		for _, str := range splitStr {
@@ -151,10 +151,10 @@ func (s *ApiService) ImageRm(reqs *request.PostImageRmRequest) (map[string][]str
 	}
 
 	if result.Error != nil {
-		logger.Printf("Error: %v\n", result.Error)
+		logger.Infof("Error: %v\n", result.Error)
 		res["stderr"] = append(res["stderr"], fmt.Sprintf("Error: %v", result.Error))
 	}
-	logger.Println("<=== END ===>")
+	logger.Infoln("<=== END ===>")
 
 	if result.ExitCode != 0 {
 		return res, &service.ShellError{
